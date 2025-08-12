@@ -101,6 +101,7 @@ impl Lexer{
         self.input.get(self.position + 1).cloned()
     }
 
+    #[allow(dead_code)]
     fn peek_nth(&self, n: usize) -> Option<char> {
         self.input.get(self.position + n).cloned()
     }
@@ -123,6 +124,7 @@ impl Lexer{
     }
 
     // Handle double dot for range operators (0..10)
+    #[allow(dead_code)]
     fn handle_range(&mut self) -> Token {
         self.advance(); // consume the first dot
         if self.peek() == Some('.') {

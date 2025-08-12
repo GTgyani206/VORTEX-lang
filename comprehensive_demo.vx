@@ -1,0 +1,162 @@
+// VORTEX Language - Comprehensive Feature Showcase
+// This example demonstrates all the major improvements made to the language
+
+print("==========================================")
+print("||    VORTEX LANGUAGE FEATURE DEMO    ||")
+print("==========================================")
+
+// ===== TYPE COERCION =====
+print("\n=== Type Coercion ===")
+let a: Int = 10
+let b: Float = 3.14
+
+print("Int + Float:")
+let sum = a + b
+print(sum)
+
+print("Int * Float:")
+let product = a * b
+print(product)
+
+print("Mixed comparison:")
+let greater = a > b
+print(greater)
+
+// ===== ARRAYS =====
+print("\n=== Arrays ===")
+let numbers = [1, 2, 3, 4, 5]
+let mixed = [42, 3.14, "hello", true]
+
+print("Numeric array:")
+print(numbers)
+
+print("Mixed type array:")
+print(mixed)
+
+print("Array indexing:")
+print("numbers[0] =")
+print(numbers[0])
+print("mixed[2] =")
+print(mixed[2])
+
+// ===== BUILT-IN FUNCTIONS =====
+print("\n=== Mathematical Functions ===")
+
+// Math operations
+print("sqrt(16) =")
+print(sqrt(16))
+
+print("abs(-7) =")
+print(abs(-7))
+
+// Trigonometry
+print("sin(1.57) ≈ sin(π/2) =")
+print(sin(1.57))
+
+print("cos(0) =")
+print(cos(0))
+
+// Rounding
+let value = 2.7
+print("floor(2.7) =")
+print(floor(value))
+
+print("ceil(2.7) =")
+print(ceil(value))
+
+print("round(2.7) =")
+print(round(value))
+
+// Min/Max
+print("min(5, 8) =")
+print(min(5, 8))
+
+print("max(5, 8) =")
+print(max(5, 8))
+
+// Length
+print("len(numbers) =")
+print(len(numbers))
+
+print("len(VORTEX) =")
+print(len("VORTEX"))
+
+// ===== VARIABLE ASSIGNMENT =====
+print("\n=== Variable Assignment ===")
+let mut counter = 0
+print("Initial counter:")
+print(counter)
+
+counter = 5
+print("After counter = 5:")
+print(counter)
+
+counter = counter + 10
+print("After counter = counter + 10:")
+print(counter)
+
+counter = sqrt(counter)
+print("After counter = sqrt(counter):")
+print(counter)
+
+// ===== COMPLEX EXPRESSIONS =====
+print("\n=== Complex Expressions ===")
+let data = [10, 20, 30, 40, 50]
+let result = max(data[0], sqrt(data[4]) * 2)
+print("max(data[0], sqrt(data[4]) * 2) =")
+print(result)
+
+// ===== FUNCTIONS (Original VORTEX Features) =====
+print("\n=== Functions ===")
+
+fn calculate(x: Int, y: Float) -> Float:
+    return x * y + sqrt(x)
+
+let computed = calculate(4, 2.5)
+print("calculate(4, 2.5) =")
+print(computed)
+
+// GPU function (simulated)
+@gpu fn gpu_multiply(x: Int, y: Int):
+    return x * y
+
+let gpu_result = gpu_multiply(6, 7)
+print("GPU multiply result:")
+print(gpu_result)
+
+// ===== CONTROL FLOW =====
+print("\n=== Control Flow ===")
+
+if len(data) > 3:
+    print("Data array has more than 3 elements")
+else:
+    print("Data array has 3 or fewer elements")
+
+// GPU-style branching
+branch len(numbers) == 5 => print("Numbers array has exactly 5 elements")
+fallback => print("Numbers array has different length")
+
+// ===== LOOPS =====
+print("\n=== Loops ===")
+
+print("For loop with range:")
+for i in range(0, 3):
+    print("Loop iteration:")
+    print(i)
+
+print("Parallel loop (GPU simulated):")
+parallel j in 0..3:
+    print("Parallel iteration:")
+    print(j)
+
+print("\n==========================================")
+print("||      FEATURE DEMO COMPLETE          ||")
+print("==========================================")
+
+print("\nVORTEX now includes:")
+print("✓ Type coercion (Int + Float)")
+print("✓ Arrays with indexing")
+print("✓ 11 built-in math functions")
+print("✓ Variable assignment/reassignment")
+print("✓ All original GPU features")
+print("✓ Clean, modern syntax")

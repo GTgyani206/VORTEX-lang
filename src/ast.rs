@@ -37,6 +37,7 @@ pub enum Expr {
         callee: Box<Expr>,
         arguments: Vec<Expr>, // not boxed unless needed
     },
+    #[allow(dead_code)]
     Return(Box<Expr>),
     Range {
         start: Box<Expr>,

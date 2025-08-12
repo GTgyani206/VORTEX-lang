@@ -13,6 +13,7 @@ use std::rc::Rc;
 pub enum RuntimeResult {
     Value(Value),
     Return(Value),
+    #[allow(dead_code)]
     None,
 }
 
