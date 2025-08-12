@@ -14,6 +14,11 @@ pub enum Expr {
     Boolean(bool),
     String(String),
     Ident(String),
+    Array(Vec<Expr>),
+    Index {
+        object: Box<Expr>,
+        index: Box<Expr>,
+    },
     Unary {
         op: Token,
         expr: Box<Expr>,

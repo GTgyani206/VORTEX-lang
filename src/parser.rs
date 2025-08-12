@@ -418,26 +418,45 @@ impl Parser {
     fn parse_call(&mut self) -> Expr {
         let mut expr = self.parse_primary();
 
-        while self.peek() == &Token::Lparen {
-            self.advance(); // consume '('
-            let mut args = Vec::new();
+        loop {
+            if self.peek() == &Token::Lparen {
+                // Function call
+                self.advance(); // consume '('
+                let mut args = Vec::new();
 
-            if self.peek() != &Token::Rparen {
-                args.push(self.parse_expression());
-                while self.match_token(&Token::Comma) {
+                if self.peek() != &Token::Rparen {
                     args.push(self.parse_expression());
+                    while self.match_token(&Token::Comma) {
+                        args.push(self.parse_expression());
+                    }
                 }
-            }
 
-            if !self.match_token(&Token::Rparen) {
-                // Try to recover by breaking
+                if !self.match_token(&Token::Rparen) {
+                    // Try to recover by breaking
+                    break;
+                }
+
+                expr = Expr::FunctionCall {
+                    callee: Box::new(expr),
+                    arguments: args,
+                };
+            } else if self.peek() == &Token::Lsquare {
+                // Array indexing
+                self.advance(); // consume '['
+                let index = self.parse_expression();
+                
+                if !self.match_token(&Token::Rsquare) {
+                    // Try to recover by breaking
+                    break;
+                }
+                
+                expr = Expr::Index {
+                    object: Box::new(expr),
+                    index: Box::new(index),
+                };
+            } else {
                 break;
             }
-
-            expr = Expr::FunctionCall {
-                callee: Box::new(expr),
-                arguments: args,
-            };
         }
 
         expr
@@ -499,6 +518,31 @@ impl Parser {
                 } else {
                     expr
                 }
+            },
+            Token::Lsquare => {
+                // Parse array literal [1, 2, 3]
+                let mut elements = Vec::new();
+                
+                // Handle empty array
+                if self.match_token(&Token::Rsquare) {
+                    return Expr::Array(elements);
+                }
+                
+                // Parse array elements
+                loop {
+                    elements.push(self.parse_expression());
+                    
+                    if self.match_token(&Token::Comma) {
+                        continue;
+                    } else if self.match_token(&Token::Rsquare) {
+                        break;
+                    } else {
+                        // Error: expected comma or closing bracket
+                        break;
+                    }
+                }
+                
+                Expr::Array(elements)
             },
             _ => Expr::Ident("error".to_string()),
         }

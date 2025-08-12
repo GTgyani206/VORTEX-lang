@@ -22,6 +22,7 @@ pub enum Value {
     Floating(f64),
     String(String),
     Boolean(bool),
+    Array(Vec<Value>),
     Nil,
     // Function(name, param_names, body, is_gpu)
     Function(String, Vec<String>, Box<crate::ast::Stmt>, bool),
@@ -34,6 +35,10 @@ impl fmt::Display for Value {
             Value::Floating(n) => write!(f, "{}", n),
             Value::String(s) => write!(f, "{}", s),
             Value::Boolean(b) => write!(f, "{}", b),
+            Value::Array(arr) => {
+                let elements: Vec<String> = arr.iter().map(|v| v.to_string()).collect();
+                write!(f, "[{}]", elements.join(", "))
+            },
             Value::Nil => write!(f, "nil"),
             Value::Function(name, ..) => write!(f, "<function {}>", name),
         }
@@ -586,6 +591,43 @@ impl Interpreter {
                     }
                 }
             }
+            Expr::Array(elements) => {
+                let mut values = Vec::new();
+                for element in elements {
+                    match self.evaluate(element)? {
+                        RuntimeResult::Value(val) => values.push(val),
+                        RuntimeResult::Return(_) => return Err("Return not allowed in array literal".to_string()),
+                        RuntimeResult::None => values.push(Value::Nil),
+                    }
+                }
+                Ok(RuntimeResult::Value(Value::Array(values)))
+            }
+            Expr::Index { object, index } => {
+                let obj_val = match self.evaluate(object)? {
+                    RuntimeResult::Value(val) => val,
+                    RuntimeResult::Return(_) => return Err("Return not allowed in index expression".to_string()),
+                    RuntimeResult::None => Value::Nil,
+                };
+                
+                let idx_val = match self.evaluate(index)? {
+                    RuntimeResult::Value(val) => val,
+                    RuntimeResult::Return(_) => return Err("Return not allowed in index expression".to_string()),
+                    RuntimeResult::None => Value::Nil,
+                };
+                
+                match (obj_val, idx_val) {
+                    (Value::Array(arr), Value::Number(idx)) => {
+                        let index = idx as usize;
+                        if index < arr.len() {
+                            Ok(RuntimeResult::Value(arr[index].clone()))
+                        } else {
+                            Err(format!("Array index {} out of bounds for array of length {}", index, arr.len()))
+                        }
+                    }
+                    (Value::Array(_), _) => Err("Array index must be a number".to_string()),
+                    _ => Err("Cannot index non-array value".to_string()),
+                }
+            }
         }
     }
 
@@ -603,6 +645,8 @@ impl Interpreter {
             Token::Plus => match (left, right) {
                 (Number(a), Number(b)) => Ok(Number(a + b)),
                 (Floating(a), Floating(b)) => Ok(Floating(a + b)),
+                (Number(a), Floating(b)) => Ok(Floating(a as f64 + b)),
+                (Floating(a), Number(b)) => Ok(Floating(a + b as f64)),
                 (String(a), String(b)) => Ok(String(a + &b)),
                 _ => Err("Invalid '+' operands".to_string()),
             },
@@ -632,25 +676,13 @@ impl Interpreter {
 
     fn numeric_op<F>(&self, left: Value, right: Value, f: F) -> Result<Value, String>
     where
-        F: Fn(i64, i64) -> i64,
+        F: Fn(f64, f64) -> f64,
     {
         match (left, right) {
-            (Value::Number(a), Value::Number(b)) => Ok(Value::Number(f(a, b))),
-            (Value::Floating(a), Value::Floating(b)) => {
-                // Convert the operation to work on floating point
-                let float_result = f(a as i64, b as i64) as f64;
-                Ok(Value::Floating(float_result))
-            },
-            (Value::Number(a), Value::Floating(b)) => {
-                // Mixed number types
-                let float_result = f(a, b as i64) as f64;
-                Ok(Value::Floating(float_result))
-            },
-            (Value::Floating(a), Value::Number(b)) => {
-                // Mixed number types
-                let float_result = f(a as i64, b) as f64;
-                Ok(Value::Floating(float_result))
-            },
+            (Value::Number(a), Value::Number(b)) => Ok(Value::Number((f(a as f64, b as f64)) as i64)),
+            (Value::Floating(a), Value::Floating(b)) => Ok(Value::Floating(f(a, b))),
+            (Value::Number(a), Value::Floating(b)) => Ok(Value::Floating(f(a as f64, b))),
+            (Value::Floating(a), Value::Number(b)) => Ok(Value::Floating(f(a, b as f64))),
             _ => {
                 println!("Warning: Expected numeric operands");
                 Ok(Value::Number(0)) // Default to 0 for error recovery
@@ -660,11 +692,14 @@ impl Interpreter {
 
     fn compare_op<F>(&self, left: Value, right: Value, f: F) -> Result<Value, String>
     where
-        F: Fn(i64, i64) -> bool,
+        F: Fn(f64, f64) -> bool,
     {
         match (left, right) {
-            (Value::Number(a), Value::Number(b)) => Ok(Value::Boolean(f(a, b))),
-            _ => Err("Expected integer operands".to_string()),
+            (Value::Number(a), Value::Number(b)) => Ok(Value::Boolean(f(a as f64, b as f64))),
+            (Value::Floating(a), Value::Floating(b)) => Ok(Value::Boolean(f(a, b))),
+            (Value::Number(a), Value::Floating(b)) => Ok(Value::Boolean(f(a as f64, b))),
+            (Value::Floating(a), Value::Number(b)) => Ok(Value::Boolean(f(a, b as f64))),
+            _ => Err("Expected numeric operands".to_string()),
         }
     }
 }

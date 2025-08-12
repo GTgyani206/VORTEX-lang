@@ -1,0 +1,36 @@
+// Test type coercion between Int and Float
+let a: Int = 5
+let b: Float = 3.14
+
+print("=== Type Coercion Tests ===")
+
+// Test addition
+let sum = a + b
+print("Int + Float:")
+print(sum)
+
+// Test subtraction
+let diff = a - b
+print("Int - Float:")
+print(diff)
+
+// Test multiplication
+let product = a * b
+print("Int * Float:")
+print(product)
+
+// Test division
+let quotient = a / b
+print("Int / Float:")
+print(quotient)
+
+// Test comparison
+let greater = a > b
+print("Int > Float:")
+print(greater)
+
+let less = a < b
+print("Int < Float:")
+print(less)
+
+print("=== Type Coercion Tests Complete ===")
