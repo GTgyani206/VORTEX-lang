@@ -1,0 +1,35 @@
+// Test variable assignment (reassignment)
+print("=== Variable Assignment Tests ===")
+
+// Test basic assignment
+let mut x = 10
+print("Initial x:")
+print(x)
+
+x = 25
+print("After x = 25:")
+print(x)
+
+// Test assignment with expressions
+x = x + 5
+print("After x = x + 5:")
+print(x)
+
+// Test assignment with function calls
+x = abs(-42)
+print("After x = abs(-42):")
+print(x)
+
+// Test multiple assignments
+let mut a = 1
+let mut b = 2
+print("Initial a and b:")
+print(a)
+print(b)
+
+a = b = 99
+print("After a = b = 99:")
+print(a)
+print(b)
+
+print("=== Assignment Tests Complete ===")

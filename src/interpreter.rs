@@ -57,15 +57,24 @@ impl Environment {
             values: HashMap::new(),
             parent: None,
         };
-        env.define(
-            "print".to_string(),
-            Value::Function(
-                "print".to_string(),
-                vec!["value".to_string()],
-                Box::new(crate::ast::Stmt::Block(vec![])), // dummy body
-                false, // not a GPU function
-            ),
-        );
+        
+        // Built-in functions
+        let built_ins = vec![
+            "print", "sqrt", "abs", "sin", "cos", "tan", "floor", "ceil", "round", "min", "max", "len"
+        ];
+        
+        for name in built_ins {
+            env.define(
+                name.to_string(),
+                Value::Function(
+                    name.to_string(),
+                    vec!["value".to_string()],
+                    Box::new(crate::ast::Stmt::Block(vec![])), // dummy body
+                    false, // not a GPU function
+                ),
+            );
+        }
+        
         Rc::new(RefCell::new(env))
     }
 
@@ -484,7 +493,6 @@ impl Interpreter {
                 match &**callee {
                     Expr::Ident(name) if name == "print" => {
                         // Handle print function specially
-                        println!("Executing built-in print function");
                         for arg in arguments {
                             match self.evaluate(arg) {
                                 Ok(RuntimeResult::Value(val)) => println!("Output: {}", val),
@@ -492,6 +500,10 @@ impl Interpreter {
                             }
                         }
                         Ok(RuntimeResult::Value(Value::Nil))
+                    },
+                    Expr::Ident(name) if self.is_builtin_function(name) => {
+                        // Handle other built-in functions
+                        self.call_builtin_function(name, arguments)
                     },
                     Expr::Ident(name) => {
                         // Check if it's a GPU function first
@@ -700,6 +712,182 @@ impl Interpreter {
             (Value::Number(a), Value::Floating(b)) => Ok(Value::Boolean(f(a as f64, b))),
             (Value::Floating(a), Value::Number(b)) => Ok(Value::Boolean(f(a, b as f64))),
             _ => Err("Expected numeric operands".to_string()),
+        }
+    }
+
+    fn is_builtin_function(&self, name: &str) -> bool {
+        matches!(name, "sqrt" | "abs" | "sin" | "cos" | "tan" | "floor" | "ceil" | "round" | "min" | "max" | "len")
+    }
+
+    fn call_builtin_function(&mut self, name: &str, arguments: &[Expr]) -> Result<RuntimeResult, String> {
+        match name {
+            "sqrt" => {
+                if arguments.len() != 1 {
+                    return Err("sqrt() takes exactly 1 argument".to_string());
+                }
+                let val = match self.evaluate(&arguments[0])? {
+                    RuntimeResult::Value(v) => v,
+                    _ => return Err("Invalid argument to sqrt()".to_string()),
+                };
+                match val {
+                    Value::Number(n) => Ok(RuntimeResult::Value(Value::Floating((n as f64).sqrt()))),
+                    Value::Floating(f) => Ok(RuntimeResult::Value(Value::Floating(f.sqrt()))),
+                    _ => Err("sqrt() requires a numeric argument".to_string()),
+                }
+            },
+            "abs" => {
+                if arguments.len() != 1 {
+                    return Err("abs() takes exactly 1 argument".to_string());
+                }
+                let val = match self.evaluate(&arguments[0])? {
+                    RuntimeResult::Value(v) => v,
+                    _ => return Err("Invalid argument to abs()".to_string()),
+                };
+                match val {
+                    Value::Number(n) => Ok(RuntimeResult::Value(Value::Number(n.abs()))),
+                    Value::Floating(f) => Ok(RuntimeResult::Value(Value::Floating(f.abs()))),
+                    _ => Err("abs() requires a numeric argument".to_string()),
+                }
+            },
+            "sin" => {
+                if arguments.len() != 1 {
+                    return Err("sin() takes exactly 1 argument".to_string());
+                }
+                let val = match self.evaluate(&arguments[0])? {
+                    RuntimeResult::Value(v) => v,
+                    _ => return Err("Invalid argument to sin()".to_string()),
+                };
+                match val {
+                    Value::Number(n) => Ok(RuntimeResult::Value(Value::Floating((n as f64).sin()))),
+                    Value::Floating(f) => Ok(RuntimeResult::Value(Value::Floating(f.sin()))),
+                    _ => Err("sin() requires a numeric argument".to_string()),
+                }
+            },
+            "cos" => {
+                if arguments.len() != 1 {
+                    return Err("cos() takes exactly 1 argument".to_string());
+                }
+                let val = match self.evaluate(&arguments[0])? {
+                    RuntimeResult::Value(v) => v,
+                    _ => return Err("Invalid argument to cos()".to_string()),
+                };
+                match val {
+                    Value::Number(n) => Ok(RuntimeResult::Value(Value::Floating((n as f64).cos()))),
+                    Value::Floating(f) => Ok(RuntimeResult::Value(Value::Floating(f.cos()))),
+                    _ => Err("cos() requires a numeric argument".to_string()),
+                }
+            },
+            "tan" => {
+                if arguments.len() != 1 {
+                    return Err("tan() takes exactly 1 argument".to_string());
+                }
+                let val = match self.evaluate(&arguments[0])? {
+                    RuntimeResult::Value(v) => v,
+                    _ => return Err("Invalid argument to tan()".to_string()),
+                };
+                match val {
+                    Value::Number(n) => Ok(RuntimeResult::Value(Value::Floating((n as f64).tan()))),
+                    Value::Floating(f) => Ok(RuntimeResult::Value(Value::Floating(f.tan()))),
+                    _ => Err("tan() requires a numeric argument".to_string()),
+                }
+            },
+            "floor" => {
+                if arguments.len() != 1 {
+                    return Err("floor() takes exactly 1 argument".to_string());
+                }
+                let val = match self.evaluate(&arguments[0])? {
+                    RuntimeResult::Value(v) => v,
+                    _ => return Err("Invalid argument to floor()".to_string()),
+                };
+                match val {
+                    Value::Number(n) => Ok(RuntimeResult::Value(Value::Number(n))), // already an integer
+                    Value::Floating(f) => Ok(RuntimeResult::Value(Value::Number(f.floor() as i64))),
+                    _ => Err("floor() requires a numeric argument".to_string()),
+                }
+            },
+            "ceil" => {
+                if arguments.len() != 1 {
+                    return Err("ceil() takes exactly 1 argument".to_string());
+                }
+                let val = match self.evaluate(&arguments[0])? {
+                    RuntimeResult::Value(v) => v,
+                    _ => return Err("Invalid argument to ceil()".to_string()),
+                };
+                match val {
+                    Value::Number(n) => Ok(RuntimeResult::Value(Value::Number(n))), // already an integer
+                    Value::Floating(f) => Ok(RuntimeResult::Value(Value::Number(f.ceil() as i64))),
+                    _ => Err("ceil() requires a numeric argument".to_string()),
+                }
+            },
+            "round" => {
+                if arguments.len() != 1 {
+                    return Err("round() takes exactly 1 argument".to_string());
+                }
+                let val = match self.evaluate(&arguments[0])? {
+                    RuntimeResult::Value(v) => v,
+                    _ => return Err("Invalid argument to round()".to_string()),
+                };
+                match val {
+                    Value::Number(n) => Ok(RuntimeResult::Value(Value::Number(n))), // already an integer
+                    Value::Floating(f) => Ok(RuntimeResult::Value(Value::Number(f.round() as i64))),
+                    _ => Err("round() requires a numeric argument".to_string()),
+                }
+            },
+            "min" => {
+                if arguments.len() != 2 {
+                    return Err("min() takes exactly 2 arguments".to_string());
+                }
+                let val1 = match self.evaluate(&arguments[0])? {
+                    RuntimeResult::Value(v) => v,
+                    _ => return Err("Invalid first argument to min()".to_string()),
+                };
+                let val2 = match self.evaluate(&arguments[1])? {
+                    RuntimeResult::Value(v) => v,
+                    _ => return Err("Invalid second argument to min()".to_string()),
+                };
+                match (val1, val2) {
+                    (Value::Number(a), Value::Number(b)) => Ok(RuntimeResult::Value(Value::Number(a.min(b)))),
+                    (Value::Floating(a), Value::Floating(b)) => Ok(RuntimeResult::Value(Value::Floating(a.min(b)))),
+                    (Value::Number(a), Value::Floating(b)) => Ok(RuntimeResult::Value(Value::Floating((a as f64).min(b)))),
+                    (Value::Floating(a), Value::Number(b)) => Ok(RuntimeResult::Value(Value::Floating(a.min(b as f64)))),
+                    _ => Err("min() requires numeric arguments".to_string()),
+                }
+            },
+            "max" => {
+                if arguments.len() != 2 {
+                    return Err("max() takes exactly 2 arguments".to_string());
+                }
+                let val1 = match self.evaluate(&arguments[0])? {
+                    RuntimeResult::Value(v) => v,
+                    _ => return Err("Invalid first argument to max()".to_string()),
+                };
+                let val2 = match self.evaluate(&arguments[1])? {
+                    RuntimeResult::Value(v) => v,
+                    _ => return Err("Invalid second argument to max()".to_string()),
+                };
+                match (val1, val2) {
+                    (Value::Number(a), Value::Number(b)) => Ok(RuntimeResult::Value(Value::Number(a.max(b)))),
+                    (Value::Floating(a), Value::Floating(b)) => Ok(RuntimeResult::Value(Value::Floating(a.max(b)))),
+                    (Value::Number(a), Value::Floating(b)) => Ok(RuntimeResult::Value(Value::Floating((a as f64).max(b)))),
+                    (Value::Floating(a), Value::Number(b)) => Ok(RuntimeResult::Value(Value::Floating(a.max(b as f64)))),
+                    _ => Err("max() requires numeric arguments".to_string()),
+                }
+            },
+            "len" => {
+                if arguments.len() != 1 {
+                    return Err("len() takes exactly 1 argument".to_string());
+                }
+                let val = match self.evaluate(&arguments[0])? {
+                    RuntimeResult::Value(v) => v,
+                    _ => return Err("Invalid argument to len()".to_string()),
+                };
+                match val {
+                    Value::Array(arr) => Ok(RuntimeResult::Value(Value::Number(arr.len() as i64))),
+                    Value::String(s) => Ok(RuntimeResult::Value(Value::Number(s.len() as i64))),
+                    _ => Err("len() requires an array or string argument".to_string()),
+                }
+            },
+            _ => Err(format!("Unknown built-in function: {}", name)),
         }
     }
 }

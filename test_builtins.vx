@@ -1,0 +1,58 @@
+// Test built-in mathematical functions
+print("=== Built-in Mathematical Functions ===")
+
+// Test basic math functions
+let x = 16.0
+let y = 4.0
+
+print("Square root:")
+print(sqrt(x))
+
+print("Absolute value of -5:")
+print(abs(-5))
+
+print("Trigonometric functions (radians):")
+print("sin(1.0):")
+print(sin(1.0))
+
+print("cos(0.0):")
+print(cos(0.0))
+
+print("tan(0.785398):")  // approximately π/4
+print(tan(0.785398))
+
+// Test rounding functions
+let decimal = 3.7
+print("Rounding 3.7:")
+print("floor:")
+print(floor(decimal))
+
+print("ceil:")
+print(ceil(decimal))
+
+print("round:")
+print(round(decimal))
+
+// Test min/max
+print("Min and max:")
+print("min(5, 3):")
+print(min(5, 3))
+
+print("max(5, 3):")
+print(max(5, 3))
+
+print("min(2.5, 3.1):")
+print(min(2.5, 3.1))
+
+// Test len function
+let numbers = [1, 2, 3, 4, 5]
+let text = "hello"
+
+print("Length functions:")
+print("len([1, 2, 3, 4, 5]):")
+print(len(numbers))
+
+print("len(hello):")
+print(len(text))
+
+print("=== Built-in Functions Test Complete ===")

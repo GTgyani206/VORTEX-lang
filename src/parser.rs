@@ -351,7 +351,24 @@ impl Parser {
     }
 
     fn parse_expression(&mut self) -> Expr {
-        self.parse_comparison()
+        self.parse_assignment()
+    }
+
+    fn parse_assignment(&mut self) -> Expr {
+        let expr = self.parse_comparison();
+
+        // Check if this is an assignment (identifier = expression)
+        if let Expr::Ident(name) = &expr {
+            if self.match_token(&Token::Equals) {
+                let value = self.parse_assignment(); // Right-associative
+                return Expr::Assignment {
+                    name: name.clone(),
+                    value: Box::new(value),
+                };
+            }
+        }
+
+        expr
     }
 
     fn parse_comparison(&mut self) -> Expr {
