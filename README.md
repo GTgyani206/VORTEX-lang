@@ -1,6 +1,9 @@
 <img src="https://github.com/user-attachments/assets/d7da596d-a1ff-4683-b4e0-4f72f0e0e729" width="15%">
 
 
+> ⚠️ This repository has moved to [nexus](https://github.com/GTgyani206/nexus).
+> Development continues there. This repo is preserved for historical reference.
+
 # Vortex Language 
 
 Vortex is a modern, GPU-accelerated programming language designed for parallel computation and high-performance computing. It features both traditional CPU execution and innovative GPU-accelerated constructs with an interactive REPL environment.
